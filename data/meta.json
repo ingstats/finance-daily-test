@@ -1,13 +1,13 @@
 {
- "id": "sample",
- "name": "팀 데일리",
- "cover_word": "TEAM",
- "description": "팀 맞춤 뉴스와 주요 지표를 평일 오전 8시에 정리합니다. (템플릿 샘플)",
+ "id": "finance-daily-test",
+ "name": "재무팀 데일리",
+ "cover_word": "FIN",
+ "description": "조달 시장·금리·신용평가 동향과 주요 금리 지표를 평일 오전 8시에 정리합니다.",
  "frequency_label": "평일 오전 8시",
- "team": "하나캐피탈",
- "news_title": "주요 동향",
+ "team": "하나캐피탈 재무팀",
+ "news_title": "조달·금리 동향",
  "data_tab": false,
- "kakao_api": "",
- "web_url": "",
+ "kakao_api": "https://script.google.com/macros/s/AKfycbydsEzCubBGvPZeFRg__slMNiaIHXSlDxnrZuQkHJ3HmTvc6CcQ-kLEf-AVCj3vVD2h/exec",
+ "web_url": "https://ingstats.github.io/finance-daily-test",
  "hub_url": ""
 }
