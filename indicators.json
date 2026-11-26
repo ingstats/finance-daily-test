@@ -1,0 +1,7 @@
+{
+ "indicators": [],
+ "sources": {
+  "한국은행 경제통계시스템(ECOS)": "https://ecos.bok.or.kr/",
+  "Yahoo Finance": "https://finance.yahoo.com/"
+ }
+}

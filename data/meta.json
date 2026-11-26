@@ -1,0 +1,13 @@
+{
+ "id": "sample",
+ "name": "팀 데일리",
+ "cover_word": "TEAM",
+ "description": "팀 맞춤 뉴스와 주요 지표를 평일 오전 8시에 정리합니다. (템플릿 샘플)",
+ "frequency_label": "평일 오전 8시",
+ "team": "하나캐피탈",
+ "news_title": "주요 동향",
+ "data_tab": false,
+ "kakao_api": "",
+ "web_url": "",
+ "hub_url": ""
+}

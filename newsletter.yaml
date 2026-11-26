@@ -1,0 +1,33 @@
+# ─────────────────────────────────────────────────────────────
+# 우리 팀 데일리 설정 — Claude가 기획 대화(daily-design)에서 채웁니다.
+# 사람이 직접 고쳐도 되지만, "○○ 바꿔 줘"라고 Claude에게 말하는 것이 편합니다.
+# ─────────────────────────────────────────────────────────────
+
+id: team-daily                 # 영문 소문자·숫자·하이픈. Gmail 초안 머리표 [TEAM-DAILY-SITE] 등에 쓰임
+name: 팀 데일리                 # 뉴스레터 이름 (사이트 제목, 카톡 첫 줄 [이름])
+cover_word: TEAM               # 사이트 바닥 큰 글자 (2~4자)
+description: 팀 맞춤 뉴스와 주요 지표를 평일 오전 8시에 정리합니다.
+frequency_label: 평일 오전 8시
+team: 하나캐피탈 ○○팀
+news_title: 주요 동향           # 사이트 '이번 호 ○○' 제목
+owner_email: ""                # 교육생 Gmail (Claude가 초안을 넣는 계정 = Apps Script 계정)
+
+site_url: ""                   # 예: https://아이디.github.io/finance-daily
+github_repo: ""                # 예: 아이디/finance-daily
+kakao_api: ""                  # Apps Script 웹 앱 주소(…/exec). 카톡 연결 후 채움
+short_url: ""                  # 무료 단축 링크(팀원 안내·QR용)
+data_tab: false                # 추적 탭(확장 시연) 사용 여부
+
+schedule:
+  timezone: Asia/Seoul
+  days: [mon, tue, wed, thu, fri]
+  publish_at: "07:10"          # Claude 예약 작업이 작성 시작
+  send_at: "08:00"             # 카톡 발송 (Apps Script)
+  skip_kr_holidays: true
+
+collection_window: "전일 07:00 ~ 당일 07:00 (KST)"
+
+guardrails:                    # kit/scripts/build.py가 발행 전에 자동 검사
+  exclude_terms: []            # 이 단어가 들어간 기사는 발행 불가 (예: 자사 기사 제외 시 '하나캐피탈')
+  banned_phrases: [왜 중요한가, 편집자 메모, 한눈에 보기, 핵심 포인트, 게임체인저, 획기적, 혁신적, 눈길, 해요, 에요, 어요, "!", 대외비]
+  max_items: 8

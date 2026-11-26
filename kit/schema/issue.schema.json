@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "newsletter-issue/v2",
+  "title": "뉴스레터 발행물 (공통 규격 v2)",
+  "description": "모든 뉴스레터가 같은 틀로 발행물을 저장합니다. 섹션 구성은 자유이며, 이 틀만 지키면 허브·메일·웹이 그대로 읽을 수 있습니다.",
+  "type": "object",
+  "required": ["schema_version", "newsletter_id", "issue_date", "status", "title", "key_points", "sections", "generated_at"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "const": 2 },
+    "newsletter_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "issue_date": { "type": "string", "format": "date", "description": "발행일 (KST)" },
+    "issue_no": { "type": "integer", "minimum": 0, "description": "0 = 시범호" },
+    "status": { "enum": ["pilot", "final"] },
+    "title": { "type": "string", "maxLength": 60, "description": "메일 제목" },
+    "preheader": { "type": "string", "maxLength": 120, "description": "받은편지함 미리보기 문구" },
+    "collection_window": {
+      "type": "object",
+      "required": ["from", "to"],
+      "properties": {
+        "from": { "type": "string", "format": "date-time" },
+        "to": { "type": "string", "format": "date-time" }
+      }
+    },
+    "key_points": {
+      "type": "array", "minItems": 1, "maxItems": 3,
+      "items": { "type": "string", "maxLength": 80 },
+      "description": "주요 소식 1~3줄 (개조식)"
+    },
+    "sections": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "items"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+          "title": { "type": "string" },
+          "empty_note": { "type": "string", "description": "해당 기사가 없을 때 표시할 문구" },
+          "items": { "type": "array", "items": { "$ref": "#/$defs/item" } }
+        }
+      }
+    },
+    "data_brief": {"type": "boolean", "description": "true면 메일에 제도·지정 현황 요약을 붙임 (월요일, 또는 새 지정·규제 단계 변화가 있을 때)"},
+    "notes": {
+      "type": "array", "items": { "type": "string", "maxLength": 160 },
+      "description": "※ 참고 사항 (예: 시범 발행, 수집 기간 변경)"
+    },
+    "excluded_note": { "type": "string", "description": "검토 후 제외한 기사와 사유 (메일 미표시, 품질 점검용)" },
+    "generated_by": { "type": "string" },
+    "generated_at": { "type": "string", "format": "date-time" }
+  },
+  "$defs": {
+    "item": {
+      "type": "object",
+      "required": ["headline", "points", "sources"],
+      "additionalProperties": false,
+      "properties": {
+        "headline": { "type": "string", "maxLength": 70, "description": "직접 작성한 제목 (기사 제목 복사 금지)" },
+        "org": { "type": "string", "description": "회사·기관" },
+        "points": {
+          "type": "array", "minItems": 1, "maxItems": 4,
+          "items": {
+            "type": "object",
+            "required": ["label", "text"],
+            "additionalProperties": false,
+            "properties": {
+              "label": { "enum": ["주요 내용", "추진 배경", "세부 내용", "관련 동향", "향후 계획", "시사점"] },
+              "text": { "type": "string", "maxLength": 140 },
+              "mark": { "type": "string", "minLength": 4, "maxLength": 40, "description": "형광펜 표시할 구절. text 안에 글자 그대로 있는 부분만 (editorial.md 4-5)" }
+            }
+          },
+          "description": "개조식 항목. 명사형 종결(~함, ~임, ~예정)"
+        },
+        "sources": {
+          "type": "array", "minItems": 1, "maxItems": 3,
+          "items": {
+            "type": "object",
+            "required": ["outlet", "url", "published_at"],
+            "additionalProperties": false,
+            "properties": {
+              "outlet": { "type": "string" },
+              "url": { "type": "string", "format": "uri" },
+              "published_at": { "type": "string", "description": "원문 게재 시각 (확인한 값)" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
