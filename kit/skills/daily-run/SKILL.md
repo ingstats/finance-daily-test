@@ -52,6 +52,7 @@ pip install --break-system-packages -q pyyaml jsonschema holidays
    (해시는 `sha256sum work/site-<오늘>.draft.txt`. **본문에 base64를 직접 옮겨 적지 않는다** — 파일 참조로 첨부하면 글자 하나 틀릴 일이 없다)
 3. `create_draft` — subject `[<ID>-KAKAO] <오늘> 대기`, body `카톡 메시지 자료(첨부)`, 첨부 `kakao-<오늘>.txt` = `work/kakao-<오늘>.draft.txt` (같은 방식).
    (오늘 같은 제목의 초안이 이미 있으면 새로 만들지 않는다)
+   **설치 중 첫 호(`--first`)는 제목 끝을 `대기` 대신 `즉시`로** 한다 → 발송기가 시간대(07:55~10:00)와 관계없이 1분 안에 보낸다. 교육 현장에서 바로 카톡으로 확인할 수 있다.
 
 ## 9. 사이트 반영 확인
 Apps Script가 1분마다 확인해 GitHub에 커밋한다. 2분 간격으로 최대 10분 동안 `[<ID>-SITE] <오늘>` 초안 제목이 `완료`로 바뀌는지 본다.

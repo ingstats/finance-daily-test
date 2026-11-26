@@ -59,8 +59,9 @@ function tick() {
   const start = Date.now();
   const now = new Date();
   const today = ymd_(now), hhmm = hm_(now);
-  const draftDue = dow_(now) <= 5 && hhmm >= CONFIG.SEND_AT && hhmm >= CONFIG.WINDOW[0] && hhmm <= CONFIG.WINDOW[1] &&
-    P.getProperty('LAST_DONE_DATE') !== today;
+  const draftDue = P.getProperty('LAST_DONE_DATE') !== today && (
+    (dow_(now) <= 5 && hhmm >= CONFIG.SEND_AT && hhmm >= CONFIG.WINDOW[0] && hhmm <= CONFIG.WINDOW[1]) ||
+    (hhmm >= '06:00' && hhmm <= '22:00' && !!findDraft_(today, '즉시')));   // 설치 첫날: 제목 '즉시' 초안은 시간대와 관계없이 바로 보냄
   if (!draftDue && !anyDue_(today)) return;          // 할 일이 없으면 아무것도 쓰지 않고 끝
   if (!beginRun_()) return;                          // 앞 실행이 아직 돌고 있으면 건너뜀
   try {
@@ -68,7 +69,7 @@ function tick() {
       try { processDraft_(today, start + CONFIG.TIME_BUDGET_MS); }
       catch (e) {
         log_('오늘 호 처리 오류: ' + errText_(e));
-        const d = findDraft_(today, '대기');
+        const d = findDraft_(today, '대기') || findDraft_(today, '즉시');
         if (d) finish_(d, d.getMessage(), d.getMessage().getPlainBody(), today, '실패', { error: errText_(e) });
       }
     }
@@ -95,7 +96,7 @@ function endRun_() { try { P.deleteProperty('RUNNING'); } catch (e) {} }
 
 /** 오늘 호 초안: 읽기 → 오늘 메시지 저장 → 기존 팀원(전환 기간)·담당자 사본 → 구독자 전원 → 초안에 결과 */
 function processDraft_(today, deadline) {
-  const draft = findDraft_(today, '대기');
+  const draft = findDraft_(today, '대기') || findDraft_(today, '즉시');
   if (!draft) return;
   const msg = draft.getMessage();
   const body = msg.getPlainBody();
@@ -923,7 +924,7 @@ function testPipelineNow() {
   const today = ymd_();
   P.deleteProperty('LAST_DONE_DATE');
   const before = P.getProperty('SENDING_DATE');
-  if (!findDraft_(today, '대기')) { console.log('오늘 대기 초안 없음'); return; }
+  if (!findDraft_(today, '대기') && !findDraft_(today, '즉시')) { console.log('오늘 대기 초안 없음'); return; }
   if (before === today) console.log('오늘 이미 기존 팀원 발송을 시작한 기록이 있어 기존 팀원에게는 다시 보내지 않습니다(구독자는 받은 사람 빼고 보냄).');
   processDraft_(today, Date.now() + CONFIG.TIME_BUDGET_MS);
   console.log((JSON.parse(P.getProperty('LOG') || '[]')).slice(0, 5).join('\n'));
