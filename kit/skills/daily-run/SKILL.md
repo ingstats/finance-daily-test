@@ -47,8 +47,10 @@ pip install --break-system-packages -q pyyaml jsonschema holidays
 
 ## 8. Gmail 초안 (Gmail 커넥터)
 1. `list_drafts`(query `subject:"[<ID>-"`)로 이 뉴스레터 초안만 본다. 제목 날짜가 오늘보다 이전인 것만 지운다.
-2. `create_draft` — to `[owner_email]`, subject `[<ID>-SITE] <오늘> 대기`, body = `work/site-<오늘>.draft.txt` 내용 그대로(한 글자도 바꾸지 않음), 서명·HTML 없음.
-3. `create_draft` — to `[owner_email]`, subject `[<ID>-KAKAO] <오늘> 대기`, body = `work/kakao-<오늘>.draft.txt` 내용 그대로.
+2. `create_draft` — to `[owner_email]`, subject `[<ID>-SITE] <오늘> 대기`, body `사이트 반영 자료(첨부)`, 서명·HTML 없음,
+   attachments `[{filename: "site-<오늘>.txt", mimeType: "text/plain", content: "sha256:<해시>:/home/claude/daily/work/site-<오늘>.draft.txt"}]`
+   (해시는 `sha256sum work/site-<오늘>.draft.txt`. **본문에 base64를 직접 옮겨 적지 않는다** — 파일 참조로 첨부하면 글자 하나 틀릴 일이 없다)
+3. `create_draft` — subject `[<ID>-KAKAO] <오늘> 대기`, body `카톡 메시지 자료(첨부)`, 첨부 `kakao-<오늘>.txt` = `work/kakao-<오늘>.draft.txt` (같은 방식).
    (오늘 같은 제목의 초안이 이미 있으면 새로 만들지 않는다)
 
 ## 9. 사이트 반영 확인

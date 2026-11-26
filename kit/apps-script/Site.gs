@@ -30,7 +30,7 @@ function publishDrafts_() {
     if (!m) return;
     const body = msg.getPlainBody();
     let result;
-    try { result = publishPayload_(body); }
+    try { result = publishPayload_(draftPayloadText_(msg, 'DAILYSITE1')); }
     catch (e) { result = { ok: false, error: errText_(e) }; }
     d.update(msg.getTo() || Session.getEffectiveUser().getEmail(), SITE_PREFIX + ' ' + m[1] + ' ' + (result.ok ? '완료' : '실패'), body + '\nRESULT ' + JSON.stringify(result));
     log_('사이트 반영 ' + m[1] + ': ' + (result.ok ? '완료 ' + result.files.length + '개' : '실패 ' + result.error));
@@ -38,6 +38,18 @@ function publishDrafts_() {
     out.push(result);
   });
   return out;
+}
+
+/** 초안의 자료 본문: 첨부한 .txt 파일(권장, Claude가 파일을 그대로 첨부) → 없으면 메일 본문 */
+function draftPayloadText_(msg, marker) {
+  const atts = msg.getAttachments() || [];
+  for (let i = 0; i < atts.length; i++) {
+    const a = atts[i];
+    if (!/\.txt$/i.test(a.getName() || '') && !/^text\//.test(a.getContentType() || '')) continue;
+    const txt = a.getDataAsString('UTF-8');
+    if (txt.indexOf(marker) >= 0) return txt;
+  }
+  return msg.getPlainBody();
 }
 
 function publishPayload_(body) {

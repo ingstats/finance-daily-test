@@ -101,7 +101,7 @@ function processDraft_(today, deadline) {
   const body = msg.getPlainBody();
   let payload;
   try {
-    payload = parsePayload_(body, today);
+    payload = parsePayload_(draftPayloadText_(msg, 'AXKAKAO1'), today);
   } catch (e) {
     finish_(draft, msg, body, today, '실패', { error: '메시지 점검 실패: ' + e.message });
     return;
@@ -704,6 +704,11 @@ function doGet(e) {
     try {
       const ownerKey = P.getProperty('OWNER_KEY');
       if (ownerKey && q.state === 'owner:' + ownerKey) {
+        if (!scopes_(t.access_token).talk) {
+          return page_('동의 항목이 빠졌습니다',
+            '<b>카카오톡 메시지 전송</b>에 동의해야 담당자 알림·시험 메시지를 받을 수 있습니다. 아래 버튼을 눌러 동의 화면에서 그 항목을 꼭 선택해 주세요.',
+            authorizeUrl_('owner:' + ownerKey, 'talk_message'), '다시 동의하기');
+        }
         P.setProperty('OWNER_REFRESH_TOKEN', t.refresh_token);
         P.setProperty('OWNER_REFRESHED_AT', new Date().toISOString());
         P.deleteProperty('OWNER_ID');
@@ -870,7 +875,7 @@ function setup() {
   ScriptApp.newTrigger('tick').timeBased().everyMinutes(1).create();
   let key = P.getProperty('OWNER_KEY');
   if (!key) { key = Utilities.getUuid().replace(/-/g, '').slice(0, 16); P.setProperty('OWNER_KEY', key); }
-  console.log('REST API 키: ' + (key_('KAKAO_REST_API_KEY') ? '저장됨' : '없음 — CONFIG에 넣고 다시 실행'));
+  console.log('REST API 키: ' + (key_('KAKAO_REST_API_KEY') ? '저장됨' : '없음 — 프로젝트 설정 > 스크립트 속성에 넣고 다시 실행'));
   GmailApp.getDrafts(); // Gmail 권한 확인
   const url = redirectUri_();
   console.log('1분 트리거 설치 완료');

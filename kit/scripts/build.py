@@ -62,7 +62,14 @@ def check(issue: dict, meta: dict) -> tuple[list[str], list[str]]:
         errors.append(f"제목은 '[{meta['name']}] '로 시작해야 합니다: {issue['title'][:30]}…")
 
     guard = meta.get("guardrails", {}) or {}
-    blob = json.dumps(issue, ensure_ascii=False)
+    # 제외어는 기사 자체(제목·기관·출처·시사점 외 항목)와 excluded_note에서만 찾는다.
+    # 시사점에 자사 이름을 쓰는 것은 허용(예: 하나캐피탈 조달 비용 관점).
+    probe = json.loads(json.dumps(issue))
+    for sec in probe["sections"]:
+        for it in sec["items"]:
+            it["points"] = [pt for pt in it["points"] if pt["label"] != "시사점"]
+    probe.pop("generated_by", None)
+    blob = json.dumps(probe, ensure_ascii=False)
     for t in guard.get("exclude_terms", []) or []:
         if t and t in blob:
             errors.append(f"제외어 '{t}'가 들어 있습니다. 해당 기사를 빼 주세요. (excluded_note에도 쓰지 말 것)")

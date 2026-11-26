@@ -14,10 +14,15 @@ function marketTick_() {
   const now = new Date(), today = ymd_(now), hhmm = hm_(now);
   if (dow_(now) > 5 || hhmm < (SET.MARKET_AT || '06:20') || hhmm > '11:00') return;
   if (P.getProperty('MARKET_DONE') === today) return;
-  P.setProperty('MARKET_DONE', today);           // 실패해도 하루 한 번만 (collectMarketNow로 다시 실행)
+  // 실패하면 20분 뒤 다시(하루 최대 3번). 3번째도 실패하면 담당자에게 알림
+  const tries = JSON.parse(P.getProperty('MARKET_TRIES') || '{}');
+  if (tries.d !== today) { tries.d = today; tries.n = 0; tries.at = 0; }
+  if (tries.n >= 3 || Date.now() - (tries.at || 0) < 20 * 60e3) return;
+  tries.n++; tries.at = Date.now(); P.setProperty('MARKET_TRIES', JSON.stringify(tries));
   const r = collectMarket_();
-  log_('지표 수집 ' + (r.ok ? '완료' : '일부 실패') + ': ' + r.summary.join(', ').slice(0, 150));
-  if (r.errors.length) notifyOwnerSafe_('[' + NAME + ' 지표] ' + r.errors.join(' / ').slice(0, 160));
+  log_('지표 수집 ' + (r.ok ? '완료' : '일부 실패(' + tries.n + '/3)') + ': ' + r.summary.join(', ').slice(0, 150));
+  if (r.ok || tries.n >= 3) P.setProperty('MARKET_DONE', today);
+  if (r.errors.length && tries.n >= 3) notifyOwnerSafe_('[' + NAME + ' 지표] ' + r.errors.join(' / ').slice(0, 160));
   // GitHub 토큰 만료 30일 전부터 월요일마다 알림
   const exp = Date.parse(String(P.getProperty('GITHUB_TOKEN_EXPIRES') || '').replace(' UTC', 'Z').replace(' ', 'T'));
   if (exp && exp - Date.now() < 30 * 864e5 && dow_(now) === 1) notifyOwnerSafe_('[' + NAME + '] 사이트 반영용 GitHub 토큰이 ' + Utilities.formatDate(new Date(exp), TZ, 'yyyy-MM-dd') + '에 만료됩니다. Claude에게 "GitHub 토큰 다시 만들어 줘"라고 말해 주세요.');
@@ -105,10 +110,16 @@ function ecosSeries2_(f, from, to) {
     for (let s = from; s <= to; s = shiftDays_(s, step + 1)) { const e = shiftDays_(s, step); windows.push([s, e < to ? e : to]); }
   }
   const out = [];
+  const n = key === 'sample' ? 10 : 1000;
   windows.forEach(function (w) {
-    const n = key === 'sample' ? 10 : 1000;
     const url = ['https://ecos.bok.or.kr/api/StatisticSearch', encodeURIComponent(key), 'json/kr/1', n, f.table, cyc, fmt(w[0]), fmt(w[1]), f.item].join('/');
-    const r = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
+    // ECOS가 가끔 연결을 끊는다(Address unavailable) → 최대 3번, 쉬었다가 다시 시도
+    let r = null, lastErr = null;
+    for (let a = 0; a < 3 && !r; a++) {
+      try { r = UrlFetchApp.fetch(url, { muteHttpExceptions: true }); }
+      catch (e) { lastErr = e; Utilities.sleep(1500 * (a + 1)); }
+    }
+    if (!r) throw new Error('ECOS 연결 실패(' + w[0] + '~' + w[1] + '): ' + (lastErr && lastErr.message));
     if (r.getResponseCode() !== 200) throw new Error('ECOS HTTP ' + r.getResponseCode());
     const j = JSON.parse(r.getContentText());
     if (!j.StatisticSearch) {
@@ -123,6 +134,7 @@ function ecosSeries2_(f, from, to) {
       const v = Number(String(x.DATA_VALUE).replace(/,/g, ''));
       if (isFinite(v)) out.push([iso, v]);
     });
+    if (key === 'sample') Utilities.sleep(200);
   });
   return out;
 }

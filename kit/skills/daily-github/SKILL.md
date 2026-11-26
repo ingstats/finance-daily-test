@@ -20,7 +20,7 @@ description: 팀 데일리 사이트를 GitHub에 개설할 때(템플릿으로 
 
 ## 3. 사이트 반영용 토큰 (daily-kakao 3단계에서 부름)
 매일 아침 Apps Script가 이 저장소 **하나에만** 파일을 올리도록 하는 열쇠다.
-1. `https://github.com/settings/personal-access-tokens/new` (Fine-grained token)를 연다.
+1. `https://github.com/settings/personal-access-tokens/new` (Fine-grained token)를 연다. **Confirm access(sudo 모드)** 화면이 나오면 [직접] "패스키(또는 이메일 코드)로 본인 확인해 주세요".
 2. Token name `<id>-site`, Expiration **1년(366일)** 또는 회사 정책 최대값, Resource owner = 교육생.
 3. Repository access **Only select repositories** → 이 저장소 하나.
 4. Permissions → Repository permissions → **Contents: Read and write** (Metadata: Read-only는 자동).
